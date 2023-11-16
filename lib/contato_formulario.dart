@@ -1,7 +1,7 @@
-import 'package:cadastros/contato/contato.dart';
-import 'package:cadastros/contato/database_helper.dart';
-import 'package:cadastros/contato_formulario_back.dart';
-import 'package:cadastros/contato_lista.dart';
+import 'package:cadastro_sqlite/contato/contato.dart';
+import 'package:cadastro_sqlite/contato/database_helper.dart';
+import 'package:cadastro_sqlite/contato_formulario_back.dart';
+import 'package:cadastro_sqlite/contato_lista.dart';
 import 'package:flutter/material.dart';
 
 class ContatoFormulario extends StatelessWidget {
@@ -12,12 +12,10 @@ class ContatoFormulario extends StatelessWidget {
   Contato? contato;
   var selectedIndex = 0;
 
-   
-
   @override
   Widget build(BuildContext context) {
     var _back = ContatoFormularioBack(context);
-     
+
     return MaterialApp(
       theme: ThemeData(
         primarySwatch: Colors.teal,
@@ -25,7 +23,7 @@ class ContatoFormulario extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: Text('Formulário com Validação'),
-        ),        
+        ),
         body: SingleChildScrollView(
           child: Container(
             margin: EdgeInsets.all(15.0),
@@ -43,30 +41,29 @@ class ContatoFormulario extends StatelessWidget {
   Widget _formUI(BuildContext context, ContatoFormularioBack _back) {
     var _controller = TextEditingController();
     var _controller2 = TextEditingController();
-    
-    if(ModalRoute.of(context)!.settings.arguments != null){
+
+    if (ModalRoute.of(context)!.settings.arguments != null) {
       contato = ModalRoute.of(context)!.settings.arguments as Contato;
     }
 
-    if(contato == null){
+    if (contato == null) {
       print('contato nulo');
-    }else{
+    } else {
       _controller.text = _back.contato.nome!;
       _controller2.text = _back.contato.idade!.toString();
     }
- 
+
     return Column(
       children: <Widget>[
         TextFormField(
           controller: _controller,
-          decoration: InputDecoration(
-            hintText: 'Nome Completo'),
+          decoration: InputDecoration(hintText: 'Nome Completo'),
           maxLength: 100,
-          validator: _validarNome,         
+          validator: _validarNome,
           onSaved: (String? val) {
             nome = val!;
-            //(newValue) => _back.contato.nome = newValue;    
-          },                   
+            //(newValue) => _back.contato.nome = newValue;
+          },
         ),
         TextFormField(
             controller: _controller2,
@@ -76,13 +73,11 @@ class ContatoFormulario extends StatelessWidget {
             validator: _validarIdade,
             onSaved: (String? val) {
               idade = val!;
-              //(newValue) => _back.contato.idade = newValue;    
+              //(newValue) => _back.contato.idade = newValue;
             }),
-           
-         
         SizedBox(height: 15.0),
         ElevatedButton(
-          onPressed:(){
+          onPressed: () {
             _sendFormSqlite();
             Navigator.of(context).pop();
             Navigator.push(
@@ -90,12 +85,10 @@ class ContatoFormulario extends StatelessWidget {
               MaterialPageRoute(builder: (context) => MyContatoList()),
             );
           },
-          child: Text('Enviar'),          
-        ), 
-        
-      
+          child: Text('Enviar'),
+        ),
         ElevatedButton(
-          onPressed: (){
+          onPressed: () {
             Navigator.of(context).pop();
             Navigator.push(
               context,
@@ -103,15 +96,15 @@ class ContatoFormulario extends StatelessWidget {
             );
           },
           child: Text('Listar'),
-        ), 
-        ElevatedButton( 
-        onPressed: () {
-          _controller.clear();
-          _controller2.clear();
-        },
-        child: Text('Limpar'))   
-      ],      
-    );           
+        ),
+        ElevatedButton(
+            onPressed: () {
+              _controller.clear();
+              _controller2.clear();
+            },
+            child: Text('Limpar'))
+      ],
+    );
   }
 
   String? _validarNome(String? value) {
@@ -130,48 +123,46 @@ class ContatoFormulario extends StatelessWidget {
     RegExp regExp = RegExp(patttern);
     if (value!.isEmpty) {
       return "Informe a idade";
-    } else if(value.length != 2){
+    } else if (value.length != 2) {
       return "A idade deve ter até 2 dígitos";
-    }else if (!regExp.hasMatch(value)) {
+    } else if (!regExp.hasMatch(value)) {
       return "A idade só deve conter números";
     }
     return null;
   }
 
-
   void _consultar() async {
-    final todasLinhas = await dbHelperSqlite.queryAllRows();    
+    final todasLinhas = await dbHelperSqlite.queryAllRows();
     print('Consulta todas as linhas:');
-    todasLinhas.forEach((row) => print(row));    
+    todasLinhas.forEach((row) => print(row));
   }
 
-  _sendFormSqlite() async{
+  _sendFormSqlite() async {
     if (_key.currentState!.validate()) {
       // Sem erros na validação
       _key.currentState!.save();
       print("Nome $nome");
       print("Idade $idade");
-            
+
       Map<String, dynamic> row = {
-        DatabaseHelper.columnNome : nome,
-        DatabaseHelper.columnIdade  : idade,
+        DatabaseHelper.columnNome: nome,
+        DatabaseHelper.columnIdade: idade,
       };
-      
-      if(contato == null){
+
+      if (contato == null) {
         final id = await dbHelperSqlite.insert(row);
         print('linha inserida id: $id');
       } else {
         Map<String, dynamic> row = {
-          DatabaseHelper.columnNome : nome,
-          DatabaseHelper.columnIdade  : idade,
+          DatabaseHelper.columnNome: nome,
+          DatabaseHelper.columnIdade: idade,
           DatabaseHelper.columnId: contato?.id,
         };
         final id2 = await dbHelperSqlite.update(row);
         print('linha alterada id: $id2');
       }
-      
     } else {
-      //  _validate = true;        
+      //  _validate = true;
       print('erro de validação');
     }
   }

@@ -1,43 +1,32 @@
-import 'package:cadastros/contato/contato.dart';
-import 'package:cadastros/contato/database_helper.dart';
-import 'package:cadastros/contato_formulario.dart';
-import 'package:cadastros/contato_lista_back.dart';
-import 'package:cadastros/my_app.dart';
+import 'package:cadastro_sqlite/contato/contato.dart';
+import 'package:cadastro_sqlite/contato/database_helper.dart';
+import 'package:cadastro_sqlite/contato_formulario.dart';
+import 'package:cadastro_sqlite/contato_lista_back.dart';
+import 'package:cadastro_sqlite/my_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'dart:core';
 
 class ContatoList extends StatelessWidget {
-  
   final dbHelperSqlite = DatabaseHelper.instance;
 
   final _back = ContatoListBack();
   var listaContato;
-  
 
   Future<List<Contato>> _buscar() async {
     final todasLinhas = await dbHelperSqlite.queryAllRows();
     print('Consulta todas as linhas _buscar():');
     todasLinhas.forEach((row) => print(row));
-    
-    
-    List<Contato> listaContato = List.generate( 
-      todasLinhas.length, (i){
-        var linha = todasLinhas[i];
-        print(i);
-        return Contato(
-          id : linha['_id'],
-          nome: linha['nome'],
-          idade: linha['idade']
-        );
-      }
-    );
-    
+
+    List<Contato> listaContato = List.generate(todasLinhas.length, (i) {
+      var linha = todasLinhas[i];
+      print(i);
+      return Contato(
+          id: linha['_id'], nome: linha['nome'], idade: linha['idade']);
+    });
+
     return listaContato;
   }
-    
-
-
 
   Widget iconEditButton(Function onPressed) {
     return IconButton(
@@ -49,29 +38,27 @@ class ContatoList extends StatelessWidget {
         icon: Icon(Icons.delete),
         color: Colors.red,
         onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                      title: Text('Excluir'),
-                      content:                      
-                        Text('Confirma a Exclusão?'),                      
-                      actions: [
-                        ElevatedButton(
-                          child: Text('Não'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text('Sim'),
-                          onPressed: remove(),
-                        ),
-                      ],
-                    ));
-            //}); 
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: Text('Excluir'),
+                    content: Text('Confirma a Exclusão?'),
+                    actions: [
+                      ElevatedButton(
+                        child: Text('Não'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      ElevatedButton(
+                        child: Text('Sim'),
+                        onPressed: remove(),
+                      ),
+                    ],
+                  ));
+          //});
         });
   }
-        
 
   @override
   Widget build(BuildContext context) {
@@ -82,14 +69,13 @@ class ContatoList extends StatelessWidget {
             IconButton(
                 icon: Icon(Icons.add),
                 onPressed: () {
-                  _back.goToForm(context); 
+                  _back.goToForm(context);
                 })
           ],
         ),
         body: Observer(builder: (context) {
           return FutureBuilder(
-              future:
-              _buscar(),
+              future: _buscar(),
               builder: (context, futuro) {
                 print(futuro.hasData);
                 print(futuro.hasError);
@@ -105,10 +91,10 @@ class ContatoList extends StatelessWidget {
                       itemCount: listaContato?.length,
                       itemBuilder: (context, i) {
                         var Contato = listaContato![i];
-                        return ListTile(                          
+                        return ListTile(
                           title: Text(Contato.nome!),
-                           onTap: (){
-                            _back.goToDetails(context, Contato); 
+                          onTap: () {
+                            _back.goToDetails(context, Contato);
                           },
                           subtitle: Text(Contato.idade.toString()),
                           trailing: Container(
@@ -116,25 +102,27 @@ class ContatoList extends StatelessWidget {
                             child: Row(
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.edit), 
-                                  color: Colors.orange, 
-                                  onPressed:   (){   
-                                    WidgetsBinding.instance.addPostFrameCallback((_){ 
-                                      _back.goToForm(context, Contato);
-                                    });                        
-                                  }),
-                                iconRemoveButton(context,(){             
-                                    _back.remove(Contato.id);                                    
-                                    WidgetsBinding.instance.addPostFrameCallback((_){
-                                      Navigator.of(context).setState(() {
-                                        _buscar();     
-                                        Navigator.of(context).pop();    
-                                        Navigator.of(context).pop();        
-                                        Navigator.of(context).pushNamed(MyApp.CONTATO_LIST);                                  
-                                      });                                     
-                                    });                                                                           
-                                  }
-                                )
+                                    icon: Icon(Icons.edit),
+                                    color: Colors.orange,
+                                    onPressed: () {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        _back.goToForm(context, Contato);
+                                      });
+                                    }),
+                                iconRemoveButton(context, () {
+                                  _back.remove(Contato.id);
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    Navigator.of(context).setState(() {
+                                      _buscar();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context)
+                                          .pushNamed(MyApp.CONTATO_LIST);
+                                    });
+                                  });
+                                })
                               ],
                             ),
                           ),
@@ -146,7 +134,6 @@ class ContatoList extends StatelessWidget {
   }
 }
 
-
 class MyContatoList extends StatefulWidget {
   @override
   State<MyContatoList> createState() => _MyContatoListState();
@@ -154,7 +141,7 @@ class MyContatoList extends StatefulWidget {
 
 class _MyContatoListState extends State<MyContatoList> {
   var selectedIndex = 0;
-  
+
   @override
   Widget build(BuildContext context) {
     Widget page;
@@ -168,44 +155,41 @@ class _MyContatoListState extends State<MyContatoList> {
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
-                            
-                     
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
-          body: Row(
-            children: [
-              SafeArea(
-                child: NavigationRail(
-                  extended: constraints.maxWidth >= 600,
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.format_list_bulleted),
-                      label: Text('Lista'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.contact_page_outlined),
-                      label: Text('Cadastro de contato'),
-                    ),
-                  ],
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: (value) {
-                        setState(() {
-                          selectedIndex = value;
-                        });                                       
-                  },
-                ),
+
+    return LayoutBuilder(builder: (context, constraints) {
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              child: NavigationRail(
+                extended: constraints.maxWidth >= 600,
+                destinations: [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.format_list_bulleted),
+                    label: Text('Lista'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.contact_page_outlined),
+                    label: Text('Cadastro de contato'),
+                  ),
+                ],
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (value) {
+                  setState(() {
+                    selectedIndex = value;
+                  });
+                },
               ),
-              Expanded(
-                child: Container(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  child: page,
-                ),
+            ),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: page,
               ),
-            ],
-          ),
-        );
-      }
-    );
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
