@@ -34,7 +34,7 @@ dependencies:
   path_provider:
   flutter_mobx:
   url_launcher:
-  hhtp:
+  http:
   mobx:
 
   # The following adds the Cupertino Icons font to your application.
@@ -44,7 +44,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mobx_codgen:
+  mobx_codegen:
   build_runner:
 
   # The "flutter_lints" package below contains a set of recommended lints to
